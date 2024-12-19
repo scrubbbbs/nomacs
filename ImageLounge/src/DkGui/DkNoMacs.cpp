@@ -87,7 +87,9 @@
 #include <QShortcut>
 #include <QSplashScreen>
 #include <QStringBuilder>
+#include <QSysInfo>
 #include <QTimer>
+#include <QUrlQuery>
 #include <QVector2D>
 #include <QtGlobal>
 #include <qmath.h>
@@ -1536,8 +1538,31 @@ void DkNoMacs::openDocumentation()
 
 void DkNoMacs::bugReport()
 {
-    QString url = "https://github.com/nomacs/nomacs/issues/new";
-    QDesktopServices::openUrl(QUrl(url));
+    QString info = R"(
+**Description**
+A clear and concise description.
+
+**Steps to Reproduce**
+List the sequence of actions leading to the bug.
+
+**Expected Behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+Add screenshots to help explain your problem.
+
+**Additional context**
+Add any other context about the problem.
+
+**System Info**)";
+    info += '\n' + DkUtils::getBuildInfo();
+
+    QUrlQuery query;
+    query.addQueryItem("body", info);
+    QUrl url("https://github.com/nomacs/nomacs/issues/new");
+    url.setQuery(query);
+
+    QDesktopServices::openUrl(url);
 }
 
 void DkNoMacs::cleanSettings()
