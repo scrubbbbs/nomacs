@@ -173,6 +173,8 @@ public slots:
     void computeThumbsBatch();
     void onWindowLoaded();
 
+    void translationScreenshots();
+
 protected:
     // mouse events
     void mouseDoubleClickEvent(QMouseEvent *event) override;

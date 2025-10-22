@@ -86,6 +86,9 @@ int main(int argc, char *argv[])
 
     QImageReader::setAllocationLimit(2048);
 
+    // translation screenshots: disable stuff for better OCR in Crowdin
+    app.setAttribute(Qt::AA_DontShowIconsInMenus, true);
+
     // init settings
     nmc::DkSettingsManager::instance().init();
     nmc::DkMetaDataHelper::initialize(); // this line makes the XmpParser thread-save - so don't delete it even if you

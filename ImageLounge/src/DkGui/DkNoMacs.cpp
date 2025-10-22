@@ -74,6 +74,7 @@
 #include <QScreen>
 #include <QStringBuilder>
 #include <QTimer>
+#include <QTreeView>
 #include <QUrlQuery>
 #include <qmath.h>
 
@@ -1638,6 +1639,161 @@ void DkNoMacs::onWindowLoaded()
     toggleDocks(DkSettingsManager::param().app().hideAllPanels);
 }
 
+void DkNoMacs::translationScreenshots()
+{
+    resize(QSize{1920, 1080});
+
+    // pre-arrange things to show strings, then turn off all docks
+    // and panels
+    auto &am = DkActionManager::instance();
+    // for (QAction *action : am.panelActions())
+    // action->setChecked(false);
+
+    // showMenuBar(true);
+
+    // TODO: turn off all docks
+    // toggleDocks(true);
+
+    const QVector<QAction *> actions1 = {
+        am.action(DkActionManager::menu_edit_image),
+        am.action(DkActionManager::menu_panel_comment),
+        am.action(DkActionManager::menu_panel_exif),
+        am.action(DkActionManager::menu_panel_histogram),
+        am.action(DkActionManager::menu_panel_info),
+        am.action(DkActionManager::menu_panel_metadata_dock),
+    };
+
+    const QVector<QAction *> actions2 = {
+        am.action(DkActionManager::menu_panel_explorer),
+        am.action(DkActionManager::menu_panel_history),
+        am.action(DkActionManager::menu_panel_log),
+    };
+
+    static const QString saveDirPath = "/home/test/Screenshots/translations";
+    static auto wait = [] {
+        QElapsedTimer tm;
+        tm.start();
+        while (tm.elapsed() < 500)
+            qApp->processEvents();
+    };
+
+    static auto screenshot = [](QWidget *widget, const QString &label) {
+        QImage img(widget->width(), widget->height(), QImage::Format_RGB32);
+        widget->render(&img);
+        img.save(QString("%1/%2.png").arg(saveDirPath).arg(label));
+    };
+
+    auto grabPanels = [this](const char *label, const QVector<QAction *> actions) {
+        for (auto *action : actions)
+            action->setChecked(true);
+
+        wait();
+        screenshot(this, label);
+
+        for (auto *action : actions)
+            action->setChecked(false);
+
+        // wait again
+        wait();
+    };
+
+    std::function<void(QWidget *, QMenuBar *, QMenu *, QString, QAction *)> grabMenus =
+        [&grabMenus](QWidget *window, QMenuBar *menuBar, QMenu *parentMenu, QString parentText, QAction *action) {
+            QMenu *menu = action->menu();
+            if (!menu)
+                return;
+
+            for (auto *a : menu->actions()) {
+                a->setText(a->text().replace("&", "")); // better OCR on Crowdin
+            }
+
+            if (menuBar)
+                menuBar->setActiveAction(action);
+            else
+                parentMenu->setActiveAction(action);
+
+            wait();
+
+            QRect r = window->geometry();
+            QPixmap pm = window->screen()->grabWindow(0, r.x(), r.y(), r.width(), r.height());
+            QImage img = pm.toImage();
+            QString text = action->text();
+            text.replace("&", "");
+            text.replace(" ", "-");
+            text = text.toLower();
+            if (!parentText.isEmpty())
+                text = parentText + "_" + text;
+            parentText = text;
+            img.save(QString("%1/menu_%2.png").arg(saveDirPath).arg(text));
+
+            for (QAction *child : menu->actions())
+                grabMenus(window, nullptr, menu, text, child);
+
+            menu->close();
+        };
+
+    // screenshot("main01", actions1);
+    // screenshot("main02", actions2);
+    if (0) {
+        auto findLastIndex = [](QAbstractItemModel *model) {
+            if (!model)
+                return QModelIndex();
+
+            // Start from root
+            QModelIndex last = model->index(model->rowCount() - 1, 0);
+            while (last.isValid()) {
+                int rows = model->rowCount(last);
+                if (rows > 0) {
+                    // Go to last child
+                    last = model->index(rows - 1, 0, last);
+                } else {
+                    break;
+                }
+            }
+            return last;
+        };
+
+        QAction *action = am.action(DkActionManager::menu_panel_metadata_dock);
+        action->setChecked(true);
+        wait();
+        auto *tree = mMetaDataDock->findChild<QTreeView *>();
+        tree->expandAll();
+        tree->scrollToTop();
+        tree->setFocus();
+        tree->setCurrentIndex(tree->model()->index(0, 0));
+        wait();
+
+        int count = 1;
+        // screenshot(this, QString("metadata_%1.png").arg(count++, 2, 10, '0'));
+
+        QModelIndex lastIndex = findLastIndex(tree->model());
+        for (int i = 0; i < 100; ++i) {
+            qApp->sendEvent(tree, new QKeyEvent(QEvent::KeyPress, Qt::Key_PageDown, Qt::NoModifier));
+            wait();
+            screenshot(this, QString("metadata_%1").arg(count++, 2, 10, '0'));
+            if (tree->currentIndex() == lastIndex)
+                break;
+        }
+
+        action->setChecked(false);
+    }
+
+    if (0) {
+        QList<QAction *> mainMenu = menuBar()->actions();
+        for (auto *action : mainMenu) {
+            action->setText(action->text().replace("&", ""));
+        }
+        for (auto *action : mainMenu) {
+            grabMenus(this, menuBar(), nullptr, "", action);
+        }
+    }
+
+    {
+        // this->getTabWidget()->contextMenuEvent(
+        // new QContextMenuEvent(QContextMenuEvent::Reason::Keyboard, QPoint{0, 0}));
+    }
+}
+
 void DkNoMacs::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Alt) {
@@ -1645,6 +1801,9 @@ void DkNoMacs::keyPressEvent(QKeyEvent *event)
         mOtherKeyPressed = false;
     } else
         mOtherKeyPressed = true;
+
+    if (event->key() == Qt::Key_J && event->modifiers() == (Qt::CTRL | Qt::SHIFT | Qt::ALT))
+        translationScreenshots();
 }
 
 void DkNoMacs::keyReleaseEvent(QKeyEvent *event)
