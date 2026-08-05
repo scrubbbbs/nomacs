@@ -750,6 +750,12 @@ void DkImageLoader::load(QSharedPointer<DkImageContainerT> image /* = QSharedPoi
     if (!image)
         return;
 
+    if (image->getLoadState() == DkImageContainerT::loaded) {
+        mCurrentImage = image;
+        imageLoaded(true); // pretend we loaded image so all signals are delivered
+        return;
+    }
+
     setCurrentImage(image);
 
     if (mCurrentImage && mCurrentImage->getLoadState() == DkImageContainerT::loading)
