@@ -830,7 +830,7 @@ void DkCentralWidget::showThumbView(bool show)
         }
 
         tabInfo->setMode(DkTabInfo::tab_thumb_preview);
-        switchWidget(thumbs_widget);
+        switchWidget(mWidgets[thumbs_widget]);
         tabInfo->activate();
 
         auto tw = getThumbScrollWidget();
@@ -990,22 +990,6 @@ void DkCentralWidget::showTabs(bool show)
         mTabbar->show();
     else
         mTabbar->hide();
-}
-
-void DkCentralWidget::switchWidget(int widget)
-{
-    if (widget == DkTabInfo::tab_single_image)
-        switchWidget(mWidgets[viewport_widget]);
-    else if (widget == DkTabInfo::tab_thumb_preview)
-        switchWidget(mWidgets[thumbs_widget]);
-    else if (widget == DkTabInfo::tab_preferences)
-        switchWidget(mWidgets[preference_widget]);
-    else if (widget == DkTabInfo::tab_recent_files)
-        switchWidget(mWidgets[recent_files_widget]);
-    else if (widget == DkTabInfo::tab_batch)
-        switchWidget(mWidgets[batch_widget]);
-    else
-        qDebug() << "Sorry, I cannot switch to widget: " << widget;
 }
 
 void DkCentralWidget::switchWidget(QWidget *widget)
