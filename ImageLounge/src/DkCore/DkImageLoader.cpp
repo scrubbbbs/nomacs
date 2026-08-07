@@ -274,7 +274,7 @@ void DkImageLoader::createImages(const DkFileInfoList &files, bool sort)
     qInfo() << "[DkImageLoader]" << mImages.size() << "containers created in" << dt;
 
     if (sort) {
-        DkImageLoader::sort();
+        sortImages();
         qInfo() << "[DkImageLoader] after sorting: " << dt;
     }
 
@@ -1682,7 +1682,7 @@ void DkImageLoader::updateCacher(QSharedPointer<DkImageContainerT> imgC)
     qDebug() << "[Cacher] created in" << dt << "(" << mem + totalMem << "MB)";
 }
 
-void DkImageLoader::sort()
+void DkImageLoader::sortImages()
 {
     for (auto &img : std::as_const(mImages))
         if (!img) {
@@ -1697,6 +1697,11 @@ void DkImageLoader::sort()
     std::sort(mImages.begin(), mImages.end(), cmp);
     if (!ascending)
         std::reverse(mImages.begin(), mImages.end());
+}
+
+void DkImageLoader::sort()
+{
+    sortImages();
 
     emit updateDirSignal(mImages);
 
