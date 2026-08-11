@@ -1292,7 +1292,12 @@ void DkCentralWidget::loadUrl(const QUrl &url, bool newTab)
 
 void DkCentralWidget::pasteImage()
 {
-    qDebug() << "pasting...";
+    auto tabInfo = mTabInfos.value(mTabbar->currentIndex());
+
+    if (tabInfo && !tabInfo->useForNewImageTab()) {
+        addTab();
+    }
+    showViewPort();
 
     QClipboard *clipboard = QApplication::clipboard();
 
