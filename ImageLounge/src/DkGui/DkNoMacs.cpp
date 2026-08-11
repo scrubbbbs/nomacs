@@ -764,13 +764,6 @@ void DkNoMacs::restartFrameless(bool)
     DkCentralWidget::tryRestart(args);
 }
 
-void DkNoMacs::showRecentFilesOnStartUp()
-{
-    QTimer::singleShot(100, this, [this]() {
-        getTabWidget()->showRecentFiles();
-    });
-}
-
 void DkNoMacs::startPong() const
 {
     QStringList args;
