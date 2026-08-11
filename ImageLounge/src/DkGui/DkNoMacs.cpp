@@ -1180,7 +1180,8 @@ void DkNoMacs::openDir()
     if (dirName.isEmpty())
         return;
 
-    getTabWidget()->load(dirName);
+    bool newTab = nmc::DkSettingsManager::param().app().openNewTab;
+    getTabWidget()->loadUnique(dirName, newTab);
 }
 
 void DkNoMacs::openFile()
