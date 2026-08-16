@@ -850,7 +850,6 @@ void DkCentralWidget::showThumbView(bool show)
 
         tabInfo->setMode(DkTabInfo::tab_thumb_preview);
         switchWidget(mWidgets[thumbs_widget]);
-        tabInfo->activate();
 
         auto tw = getThumbScrollWidget();
         Q_ASSERT(tw);
@@ -858,13 +857,11 @@ void DkCentralWidget::showThumbView(bool show)
         auto imageLoader = tabInfo->getImageLoader();
 
         tw->getThumbWidget()->setImageLoader(imageLoader);
+        tw->updateThumbs(imageLoader->getImages());
 
-        if (imageLoader) {
-            tw->updateThumbs(imageLoader->getImages());
-
-            auto image = imageLoader->getCurrentImage();
-            if (image)
-                tw->getThumbWidget()->ensureVisible(image->filePath());
+        auto image = imageLoader->getCurrentImage();
+        if (image) {
+            tw->getThumbWidget()->ensureVisible(image->filePath());
         }
 
         connect(tw,
@@ -1037,7 +1034,6 @@ void DkCentralWidget::switchWidget(QWidget *widget)
             mode = DkTabInfo::tab_batch;
 
         mTabInfos[mTabbar->currentIndex()]->setMode(mode);
-        updateTab(mTabInfos[mTabbar->currentIndex()]);
     }
 }
 
