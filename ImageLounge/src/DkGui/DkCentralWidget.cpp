@@ -1013,6 +1013,8 @@ void DkCentralWidget::showTabs(bool show)
 
 void DkCentralWidget::switchWidget(QWidget *widget)
 {
+    Q_ASSERT(widget);
+
     if (mViewLayout->currentWidget() == widget && mTabInfos[mTabbar->currentIndex()]->getMode() != DkTabInfo::tab_empty)
         return;
 
@@ -1021,7 +1023,7 @@ void DkCentralWidget::switchWidget(QWidget *widget)
     else
         mViewLayout->setCurrentWidget(mWidgets[viewport_widget]);
 
-    if (!mTabInfos.isEmpty()) {
+    if (widget && !mTabInfos.isEmpty()) {
         int mode = DkTabInfo::tab_single_image;
 
         if (widget == mWidgets[thumbs_widget])
