@@ -2159,15 +2159,10 @@ void DkThumbsView::mouseDoubleClickEvent(QMouseEvent *event)
         return;
     }
 
-    DkThumbScene *sc = thumbsScene();
-    DkThumbLabel *itemClicked = static_cast<DkThumbLabel *>(sc->itemAt(mapToScene(event->pos()), QTransform()));
-
-    // Prevent fullscreen switch when mouse is in the space between thumbnails
-    if (!itemClicked) {
-        return;
-    }
-
     QGraphicsView::mouseDoubleClickEvent(event);
+
+    // Prevent fullscreen switch if cursor doesn't move (qt bug?) or lies between thumbs
+    event->accept();
 }
 
 void DkThumbsView::mouseMoveEvent(QMouseEvent *event)
