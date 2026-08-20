@@ -2132,25 +2132,27 @@ void DkThumbsView::wheelEvent(QWheelEvent *event)
 
 void DkThumbsView::mousePressEvent(QMouseEvent *event)
 {
-    if (event->buttons() == Qt::LeftButton) {
-        mMouseDownPos = event->pos();
-    }
+    mMouseDownPos = event->pos();
 
-    // No forwarding as we must ignore default item selection model
+    // No forwarding for any buttons to ignore default item selection model
+    event->accept();
 }
 
 void DkThumbsView::mouseReleaseEvent(QMouseEvent *event)
 {
-    // Selection happens on mouse release so click to select works and drag can work without modifier key
-    DkThumbScene *sc = thumbsScene();
-    DkThumbLabel *itemClicked = static_cast<DkThumbLabel *>(sc->itemAt(mapToScene(event->pos()), QTransform()));
+    if (event->button() == Qt::LeftButton) {
+        // Selection happens on mouse release so click to select works and drag can work without modifier key
+        DkThumbScene *sc = thumbsScene();
+        DkThumbLabel *itemClicked = static_cast<DkThumbLabel *>(sc->itemAt(mapToScene(event->pos()), QTransform()));
 
-    // If no item do nothing; this will prevent misclick clearing the selection
-    if (!itemClicked) {
-        return;
+        // If no item do nothing; this prevents misclick from clearing the selection
+        if (itemClicked) {
+            sc->thumbClicked(itemClicked, event);
+        }
     }
 
-    sc->thumbClicked(itemClicked, event);
+    // No forwarding for any buttons to ignore default item selection model
+    event->accept();
 }
 
 void DkThumbsView::mouseDoubleClickEvent(QMouseEvent *event)
