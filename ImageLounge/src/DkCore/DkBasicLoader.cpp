@@ -1495,6 +1495,10 @@ bool DkBasicLoader::saveToBuffer(const QString &filePath,
         // If your images are saved without metadata, check if the metadata object is discarded or reset
         // causing isLoaded() to return false (glitch on reload) - pse
         if (metaData->isLoaded()) {
+            if (fInfo.suffix().contains(QRegularExpression("(tif|tiff)"))) {
+                mMetaData->fixTIFFAfterSave();
+            }
+
             try {
                 // be careful: here we actually lie about the constness
                 metaData->updateImageMetaData(img, false); // set dimensions in exif (do not reset exif orientation)
