@@ -1149,6 +1149,41 @@ void DkMetaDataT::clearExifState()
         mExifState = loaded;
 }
 
+void DkMetaDataT::fixTIFFAfterSave()
+{
+    if (mExifState == not_loaded || mExifState == no_data) {
+        return;
+    }
+
+    try {
+        Exiv2::ExifData &exif = mExifImg->exifData();
+        if (exif.empty()) {
+            return;
+        }
+
+        // Qt does not write MinSampleValue/MaxSampleValue TIFF keys and if
+        // the number of channels in the file changed, this will usually produce
+        // warnings or unreadable files. These keys store the "usable dynamic range"
+        // of the image. Since we don't know what modifications to image pixels were
+        // made by nomacs or the qt plugin, we should just discard them as now
+        // being unreliable. See nomacs#1602
+        static constexpr const char *keys[2] = {
+            "Exif.Image.0x0118", // MinSampleValue
+            "Exif.Image.0x0119", // MaxSampleValue
+        };
+        for (auto key : keys) {
+            auto it = exif.findKey(Exiv2::ExifKey{key});
+            if (it != exif.end()) {
+                qWarning() << "[exif] deleting invalidated TIFF key:" << key
+                           << "value:" << it->value().toString().c_str();
+                exif.erase(it);
+            }
+        }
+    } catch (const std::exception &e) {
+        qWarning() << "[exif] exception in fixTIFFAfterSave" << e.what();
+    }
+}
+
 void DkMetaDataT::setOrientation(int o)
 {
     if (mExifState == not_loaded || mExifState == no_data)

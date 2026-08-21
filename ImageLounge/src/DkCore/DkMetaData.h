@@ -120,6 +120,7 @@ public:
     void setResolution(const QVector2D &res);
     void clearOrientation();
     void clearExifState();
+    void fixTIFFAfterSave();
     void setOrientation(int o);
     bool setRating(int r);
     bool setDescription(const QString &description);
