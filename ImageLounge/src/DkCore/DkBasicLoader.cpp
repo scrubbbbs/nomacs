@@ -1429,7 +1429,6 @@ bool DkBasicLoader::saveToBuffer(const QString &filePath,
     bool saved = false;
 
     QFileInfo fInfo(filePath);
-
 #ifdef Q_OS_WIN
     if (0 == fInfo.suffix().compare("ico", Qt::CaseInsensitive)) {
         saved = saveWindowsIcon(img, ba);
@@ -1445,6 +1444,10 @@ bool DkBasicLoader::saveToBuffer(const QString &filePath,
         // if the alpha channel is not actually used we can drop it (requires ARGB32)
         bool hasAlpha = DkImage::alphaChannelUsed(sImg);
 
+        // TODO: use case-folded extension check for reliability
+        // TODO: use constexpr array scan instead of slow QRegularExpression
+        // TODO: eliminate extension check entirely if we can as it is maintenance problem to hardcode these
+        // TODO: update any required format conversions based on more current plugins
         // JPEG 2000 can only handle 32 or 8bit images
         if (!hasAlpha && img.colorTable().empty()
             && !fInfo.suffix().contains(QRegularExpression("(avif|j2k|jp2|jpf|jpx|jxl|png)"))) {
