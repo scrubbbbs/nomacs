@@ -1084,14 +1084,34 @@ void DkViewPort::previousMovieFrame()
         return;
     }
 
-    int fn = mMovie->currentFrameNumber() - 1;
-    if (fn == -1)
-        fn = mMovie->frameCount() - 1;
+    // Get the previous frame number, do not loop
+    int frame = qMax(0, mMovie->currentFrameNumber() - 1);
 
-    // NOTE: we'd prefer QMovie::jumpToFrame but it does not always work
-    // and might cause freezes after a few clicks (GIF images)
-    while (mMovie->currentFrameNumber() != fn)
+    // We might get bogus value from currentFrameNumber()
+    if (mMovie->frameCount() > 0) {
+        frame = qMin(frame, mMovie->frameCount() - 1);
+    }
+
+    if (!mMovie->jumpToFrame(frame)) {
+        // Backwards jump does not typically work due to compression method
+        // Reload the file and discard frames from the start
+        mMovieIo->seek(0);
+        mMovie->setDevice(mMovieIo.get());
         mMovie->jumpToNextFrame();
+
+        Q_ASSERT(mMovie->currentFrameNumber() == 0);
+
+        for (int idx = 0; idx < frame; ++idx) {
+            if (!mMovie->jumpToNextFrame()) {
+                break;
+            }
+        }
+    }
+
+    if (mMovie->currentFrameNumber() != frame) {
+        qWarning() << "[movie] failed to load frame:" << frame << "gave up at frame:" << mMovie->currentFrameNumber()
+                   << "error:" << mMovie->lastError() << mMovie->lastErrorString();
+    }
 
     update();
 }
