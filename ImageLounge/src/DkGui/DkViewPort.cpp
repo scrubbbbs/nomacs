@@ -49,6 +49,7 @@
 #include <QColorSpace>
 #include <QDrag>
 #include <QDragLeaveEvent>
+#include <QImageReader>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
@@ -1000,14 +1001,32 @@ void DkViewPort::loadMovie()
         mMovie->stop();
 
     DkFileInfo fileInfo = mLoader->getCurrentImage()->fileInfo();
-    if (fileInfo.isSymLink() && !fileInfo.resolveSymLink())
+    if (fileInfo.isSymLink() && !fileInfo.resolveSymLink()) {
         return;
+    }
+
+    const QByteArray format = fileInfo.suffix().toLower().toLatin1();
+
+    // Quick check if we have animation without reading the whole thing,
+    // otherwise we read the file again in the image loader.
+    {
+        std::unique_ptr<QIODevice> io = fileInfo.getIODevice();
+        if (!io) {
+            return;
+        }
+
+        QImageReader reader(io.get(), format);
+        if (!reader.canRead() || !reader.supportsAnimation() || reader.imageCount() == 1) {
+            return;
+        }
+    }
 
     std::unique_ptr<QIODevice> io = fileInfo.getIODevice();
-    if (!io)
+    if (!io) {
         return;
+    }
 
-    // read file to buffer, uses more memory, but:
+    // Read file to buffer, uses more memory, but:
     // - devices that can't seek also can't loop (zip, network)
     // - QMovie has a bug, fails to loop when constructed with a QFile
     // - we don't keep the file handle open (on windows can be a problem with delete, rename etc)
@@ -1015,14 +1034,11 @@ void DkViewPort::loadMovie()
     mMovieIo.reset(new QBuffer);
     mMovieIo->setData(io->readAll());
 
-    QByteArray format = fileInfo.suffix().toLower().toLatin1();
-
     // QIODevice pointer is not owned by QMovie
     QSharedPointer<QMovie> m(new QMovie(mMovieIo.get(), format));
 
-    // check if it truely a movie (we need this for we don't know if webp is actually animated)
-    if (!m->isValid() || m->frameCount() == 1) {
-        qWarning() << "[movie]" << fileInfo.fileName() << "invalid format or not an animation";
+    if (!m->isValid()) {
+        qWarning() << "[movie]" << fileInfo.fileName() << "invalid animation";
         return;
     }
 
