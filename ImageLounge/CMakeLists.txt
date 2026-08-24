@@ -46,6 +46,7 @@ option(ENABLE_CODE_COV "Run Code Coverage tests" OFF)
 option(ENABLE_TESTING "Run tests" ON)
 option(ENABLE_BENCHMARK "Run benchmark" OFF)
 option(ENABLE_PCH "Enable precompiled headers" OFF)
+option(ENABLE_SANITIZE "Enable runtime sanitizers (slow, development only)" OFF)
 
 # Codecov
 if(ENABLE_CODE_COV AND CMAKE_COMPILER_IS_GNUCXX)
@@ -200,6 +201,14 @@ qt_add_resources(NOMACS_RCC ${NOMACS_RESOURCES})
 
 if(${ENABLE_TRANSLATIONS})
     qt_add_translation(NOMACS_QM ${NOMACS_TRANSLATIONS} OPTIONS -silent)
+endif()
+
+if(ENABLE_SANITIZE)
+    if(NOT MSVC)
+        add_compile_options(-fsanitize=address,undefined -g -fomit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined -g -fomit-frame-pointer)
+    endif()
+    message(WARNING "!! Sanitizers should only be used for development !!")
 endif()
 
 if(MSVC)
