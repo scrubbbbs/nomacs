@@ -29,9 +29,11 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCompleter>
 #include <QDockWidget>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QLineEdit>
 #include <QMainWindow>
 #include <QSet>
 #include <QTreeView>
@@ -195,6 +197,16 @@ bool DkShortcutEventFilter::eventFilter(QObject *target, QEvent *e)
         const QMetaObject *type;
         const QVector<QKeySequence> keys;
     } reservedKeys[] = {
+        // capture keys for QCompleter, not grabbed by QLineEdit for some reason
+        {&QLineEdit::staticMetaObject,
+         {Qt::Key_Up,
+          Qt::Key_Down,
+          Qt::Key_Return,
+          Qt::Key_Up | Qt::KeypadModifier,
+          Qt::Key_Down | Qt::KeypadModifier,
+          Qt::Key_Enter,
+          Qt::Key_PageUp,
+          Qt::Key_PageDown}},
         // this comes before QAbstractItemView or else - as a subclass - it is never checked
         {&QTreeView::staticMetaObject,
          {
