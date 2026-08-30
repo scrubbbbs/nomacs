@@ -259,8 +259,9 @@ void DkImageLoader::imagesSorted()
 void DkImageLoader::updateDirWatcher()
 {
     // the watched dir didn't necessarily change but we'll do this anyways
-    const QStringList watched[] = {mDirWatcher->directories(), mDirWatcher->files()};
+    QStringList watched[] = {mDirWatcher->directories(), mDirWatcher->files()};
     for (auto &w : watched) {
+        w.removeAll(mCurrentDir); // Removing/putting back same dir is bugged on macOS (QTBUG-149617)
         if (!w.isEmpty()) // Qt gives a warning if we pass empty list
             mDirWatcher->removePaths(w);
     }
