@@ -253,15 +253,18 @@ void DkImageLoader::imagesSorted()
 
     emit updateDirSignal(mImages);
 
-    // this is duplicate code; it is also dead code since threaded sort is disabled
+    updateDirWatcher();
+}
+
+void DkImageLoader::updateDirWatcher()
+{
+    // the watched dir didn't necessarily change but we'll do this anyways
     const QStringList watched[] = {mDirWatcher->directories(), mDirWatcher->files()};
     for (auto &w : watched) {
         if (!w.isEmpty()) // Qt gives a warning if we pass empty list
             mDirWatcher->removePaths(w);
     }
     mDirWatcher->addPath(mCurrentDir);
-
-    qDebug() << "images sorted...";
 }
 
 void DkImageLoader::createImages(const DkFileInfoList &files, bool sort)
@@ -297,13 +300,7 @@ void DkImageLoader::createImages(const DkFileInfoList &files, bool sort)
         qInfo() << "[DkImageLoader] after sorting: " << dt;
     }
 
-    // the watched dir didn't necessarily change but we'll do this anyways
-    const QStringList watched[] = {mDirWatcher->directories(), mDirWatcher->files()};
-    for (auto &w : watched) {
-        if (!w.isEmpty()) // Qt gives a warning if we pass empty list
-            mDirWatcher->removePaths(w);
-    }
-    mDirWatcher->addPath(mCurrentDir);
+    updateDirWatcher();
 }
 
 QVector<QSharedPointer<DkImageContainerT>> DkImageLoader::sortImages(

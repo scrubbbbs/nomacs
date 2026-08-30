@@ -174,6 +174,8 @@ protected:
     bool hasFile() const;
     QString fileName() const;
 
+    void updateDirWatcher();
+
     QString mFolderFilterString; // are deleted if a new folder is opened
 
     QTimer mDelayedUpdateTimer;
