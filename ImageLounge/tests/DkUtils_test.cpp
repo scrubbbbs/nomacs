@@ -3,11 +3,22 @@
 #include <gtest/gtest.h>
 #include <string>
 
-TEST(LinkedVersionTest, Test)
+TEST(TestEnvironment, Test)
 {
     // If this test fails the test executable has loaded the wrong nomacsCore shared library
     // This can be caused by LD_LIBRARY_PATH containing another installation of nomacsCore.
     EXPECT_EQ(std::string(NOMACS_REVISION_STR), std::string(nmc::revisionString));
+
+    qInfo() << "NOMACS_TESTING: " << qgetenv("NOMACS_TESTING");
+    qInfo() << "QT_PLUGIN_PATH:" << qgetenv("QT_PLUGIN_PATH");
+    qInfo() << "LD_LIBRARY_PATH: " << qgetenv("LD_LIBRARY_PATH");
+    qInfo() << "DYLD_LIBRARY_PATH: " << qgetenv("DYLD_LIBRARY_PATH");
+
+    // If you are running test binary directly (not ctest) these must be set
+    EXPECT_NE(qgetenv("NOMACS_TESTING"), "") << "Test environment is invalid, NOMACS_TESTING is not set";
+    EXPECT_NE(qgetenv("QT_PLUGIN_PATH"), "")
+        << "Test environment is invalid, QT_PLUGIN_PATH is not set\n\n"
+           "Run 'source test.env' in the build directory before running tests directly";
 }
 
 TEST(DkFileNameConverterTest, Test)
