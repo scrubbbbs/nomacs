@@ -764,6 +764,19 @@ bool DkBasicLoader::loadTIFF(const QString &filePath, QImage &img, QSharedPointe
             convert32BitOrder(img.scanLine(y), width);
     }
 
+    uint32_t profileSize = 0;
+    void *profileData = nullptr;
+
+    if (TIFFGetField(tiff, TIFFTAG_ICCPROFILE, &profileSize, &profileData)) {
+        if (profileSize && profileData) {
+            auto iccProfile = QByteArray{static_cast<const char *>(profileData), static_cast<qsizetype>(profileSize)};
+            auto colorSpace = QColorSpace::fromIccProfile(iccProfile);
+            if (colorSpace.isValid()) {
+                img.setColorSpace(colorSpace);
+            }
+        }
+    }
+
     TIFFClose(tiff);
 
     TIFFSetWarningHandler(oldWarningHandler);
