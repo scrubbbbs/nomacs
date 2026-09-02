@@ -99,6 +99,17 @@ public:
 
     static QString getBufferSize(const QSize &imgSize, const int depth);
     static float getBufferSizeFloat(const QSize &imgSize, const int depth);
+
+    /**
+     * @brief create an empty image with the same properties as src image
+     * @param src image to copy properties from
+     * @param newSize new image size, if empty, use src.size()
+     * @param format new image format, if Format_Invalid, use src.format()
+     */
+    static QImage allocateLike(const QImage &img,
+                               const QSize &newSize = {},
+                               QImage::Format format = QImage::Format_Invalid);
+
     static QImage resizeImage(const QImage &src,
                               const QSize &newSize,
                               double factor = 1.0,
