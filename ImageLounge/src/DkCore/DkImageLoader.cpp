@@ -1115,7 +1115,8 @@ void DkImageLoader::saveUserFile(const QImage &saveImg, bool silent)
 
         if (saveImg.hasAlphaChannel()) {
             QRect imgRect = QRect(QPoint(), saveImg.size());
-            QImage tmpImg = QImage(saveImg.size(), QImage::Format_RGB32);
+            // TODO: there are more formats that need the same treatment (ppm, others?)
+            QImage tmpImg = DkImage::allocateLike(saveImg, {}, QImage::Format_RGB32);
             QPainter painter(&tmpImg);
             painter.fillRect(imgRect, jpgDialog->getBackgroundColor());
             painter.drawImage(imgRect, saveImg, imgRect);
