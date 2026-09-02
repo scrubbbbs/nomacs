@@ -24,6 +24,7 @@
 
 #include "DkPageSegmentation.h"
 
+#include "DkImageStorage.h"
 #include "DkPageSegmentationUtils.h"
 
 #include <QPainter>
@@ -247,8 +248,9 @@ QImage DkPageSegmentation::cropToRect(const QImage &img, const nmc::DkRotatingRe
     double angle = nmc::DkMath::normAngleRad(rect.getAngle(), 0, CV_PI * 0.5);
     double minD = qMin(abs(angle), abs(angle - CV_PI * 0.5));
 
-    QImage cImg = QImage(qRound(cImgSize.x()), qRound(cImgSize.y()), QImage::Format_ARGB32);
-    cImg.fill(bgCol.rgba());
+    const QSize imgSize{qRound(cImgSize.x()), qRound(cImgSize.y())};
+    QImage cImg = nmc::DkImage::allocateLike(img, imgSize);
+    cImg.fill(bgCol);
 
     // render the image into the new coordinate system
     QPainter painter(&cImg);

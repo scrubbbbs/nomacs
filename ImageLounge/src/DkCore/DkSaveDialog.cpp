@@ -322,8 +322,7 @@ void DkCompressDialog::drawPreview()
         return;
 
     QImage origImg = mOrigView->getCurrentImageRegion();
-    mNewImg = QImage(origImg.size(), QImage::Format_ARGB32);
-    mNewImg.setColorSpace(origImg.colorSpace());
+    mNewImg = DkImage::allocateLike(origImg, {}, QImage::Format_ARGB32);
 
     if ((mDialogMode == jpg_dialog || mDialogMode == j2k_dialog) && mHasAlpha)
         mNewImg.fill(mBgCol.rgb());
@@ -405,6 +404,9 @@ void DkCompressDialog::drawPreview()
     } else
         updateFileSizeLabel();
 
+    // TODO: offer to convert to sRGB if we can't embed the colorspace
+    // if (mImg.colorSpace() != mNewImg.colorSpace()) {
+    // }
     qreal deviceScale = devicePixelRatioF();
 
     QImage img = mNewImg.scaled(mPreviewLabel->size() * deviceScale, Qt::KeepAspectRatio, Qt::FastTransformation);

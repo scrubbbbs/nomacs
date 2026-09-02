@@ -235,6 +235,12 @@ DkNativeImage DkNativeImage::fromMat(cv::Mat &mat, const QImage &srcImg, int opt
 
     QImage qImg(mat.data, mat.cols, mat.rows, mat.step, qtFormat);
     qImg.setColorSpace(srcImg.colorSpace());
+    qImg.setDevicePixelRatio(srcImg.devicePixelRatio());
+    qImg.setDotsPerMeterX(srcImg.dotsPerMeterX());
+    qImg.setDotsPerMeterY(srcImg.dotsPerMeterY());
+    for (auto &key : srcImg.textKeys()) {
+        qImg.setText(key, srcImg.text(key));
+    }
 
     return {std::move(qImg), cv::Mat(mat), false};
 }
