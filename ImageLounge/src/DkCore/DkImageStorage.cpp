@@ -332,9 +332,7 @@ QImage DkImage::flipImage(const QImage &image, Qt::Orientations flags)
 template<typename T>
 QImage transposeImage(const QImage &imgIn)
 {
-    QImage imgOut = QImage(imgIn.size().transposed(), imgIn.format());
-    imgOut.setColorTable(imgIn.colorTable());
-    imgOut.setColorSpace(imgIn.colorSpace());
+    QImage imgOut = DkImage::allocateLike(imgIn, imgIn.size().transposed());
 
     const int h = imgIn.height();
     const int w = imgIn.width();
@@ -360,9 +358,7 @@ QImage transposeImage24(const QImage &imgIn)
     // NOTE: this implementation is more general (any depth that is multiple of 8 can be handled),
     // but somehow several times slower than the above transposeImage.
 
-    QImage imgOut = QImage(imgIn.size().transposed(), imgIn.format());
-    imgOut.setColorTable(imgIn.colorTable());
-    imgOut.setColorSpace(imgIn.colorSpace());
+    QImage imgOut = DkImage::allocateLike(imgIn, imgIn.size().transposed());
 
     const int h = imgIn.height();
     const int w = imgIn.width();
@@ -1233,8 +1229,8 @@ QImage DkImage::cropToImage(const QImage &src, const DkRotatingRect &rect, const
         outFormat = QImage::Format_ARGB32;
     }
 
-    QImage img = QImage(qRound(cImgSize.x()), qRound(cImgSize.y()), outFormat);
-    img.setColorSpace(src.colorSpace());
+    const QSize imgSize{qRound(cImgSize.x()), qRound(cImgSize.y())};
+    QImage img = DkImage::allocateLike(src, imgSize, outFormat);
 
     if (outFormat == QImage::Format_Mono || outFormat == QImage::Format_MonoLSB) {
         img.fill(fillColor.lightness() < 127 ? 0 : 1);
@@ -1643,8 +1639,7 @@ QImage DkImage::bgColor(const QImage &src, const QColor &col)
         opaqueFormat = QImage::Format_RGB32;
     }
 
-    QImage dst(src.size(), opaqueFormat);
-    dst.setColorSpace(src.colorSpace());
+    QImage dst = DkImage::allocateLike(src, {}, opaqueFormat);
     dst.fill(col);
 
     QPainter p(&dst);
