@@ -1,5 +1,6 @@
 
 #include "DkNativeImage.h"
+#include "DkImageStorage.h"
 
 #include <QColorSpace>
 
@@ -240,14 +241,8 @@ DkNativeImage DkNativeImage::fromMat(cv::Mat &mat, const QImage &srcImg, int opt
 
 DkNativeImage DkNativeImage::allocateLike(const QSize &size) const
 {
-    QImage tmp(size.isEmpty() ? mImg.size() : size, mImg.format());
-
     Q_ASSERT(mImg.colorTable().isEmpty());
-    tmp.setColorSpace(mImg.colorSpace());
-    tmp.setDevicePixelRatio(mImg.devicePixelRatio());
-    tmp.setDotsPerMeterX(mImg.dotsPerMeterX());
-    tmp.setDotsPerMeterY(mImg.dotsPerMeterY());
-
+    QImage tmp = DkImage::allocateLike(mImg, size);
     return fromImage(std::move(tmp), map_anyrgb);
 }
 
