@@ -99,6 +99,25 @@ float DkImage::getBufferSizeFloat(const QSize &imgSize, const int depth)
     return (float)size / (1024.0f * 1024.0f);
 }
 
+QImage DkImage::allocateLike(const QImage &src, const QSize &newSize, QImage::Format format)
+{
+    auto size = newSize.isEmpty() ? src.size() : newSize;
+    auto fmt = format == QImage::Format_Invalid ? src.format() : format;
+
+    QImage dst{size, fmt};
+
+    dst.setDotsPerMeterX(src.dotsPerMeterX());
+    dst.setDotsPerMeterY(src.dotsPerMeterY());
+    dst.setColorSpace(src.colorSpace());
+    dst.setColorTable(src.colorTable());
+    dst.setDevicePixelRatio(src.devicePixelRatio());
+    for (const auto &key : src.textKeys()) {
+        dst.setText(key, src.text(key));
+    }
+
+    return dst;
+}
+
 static QImage convertToColorSpace(const QImage &src, QImage::Format dstFormat, const QColorSpace &dstColorSpace)
 {
     QImage img = src;
@@ -365,14 +384,7 @@ QImage transposeImage24(const QImage &imgIn)
 QImage rotateImageCVMat(const QImage &imgIn, cv::RotateFlags rot, int type)
 {
     QSize size = rot == cv::ROTATE_180 ? imgIn.size() : imgIn.size().transposed();
-    QImage imgOut = QImage(size, imgIn.format());
-    imgOut.setColorTable(imgIn.colorTable());
-    imgOut.setColorSpace(imgIn.colorSpace());
-    imgOut.setDotsPerMeterX(imgIn.dotsPerMeterX());
-    imgOut.setDotsPerMeterY(imgIn.dotsPerMeterY());
-    imgOut.setDevicePixelRatio(imgIn.devicePixelRatio());
-    for (auto &key : imgIn.textKeys())
-        imgOut.setText(key, imgIn.text(key));
+    QImage imgOut = DkImage::allocateLike(imgIn, size);
 
     const cv::Mat matIn = cv::Mat(imgIn.height(),
                                   imgIn.width(),
@@ -630,10 +642,7 @@ public:
 
         auto qtFormat = nativeFormatToQtFormat(dstFormat);
         auto &src = mSrc.img();
-        QImage dst{src.size(), qtFormat};
-        dst.setDevicePixelRatio(src.devicePixelRatio());
-        dst.setDotsPerMeterX(src.dotsPerMeterX());
-        dst.setDotsPerMeterY(src.dotsPerMeterY());
+        QImage dst = DkImage::allocateLike(src, src.size(), qtFormat);
 
         QColorSpace dstColorSpace;
         if (usesAlpha) {
