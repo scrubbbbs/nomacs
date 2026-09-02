@@ -1211,16 +1211,16 @@ QImage DkImage::cropToImage(const QImage &src, const DkRotatingRect &rect, const
     double error = std::abs(std::round(rightAngle) - rightAngle);
     bool rotated = error > epsilon;
 
-    if (!rotated) {
-        QRect cropRect = tForm.inverted().mapRect(QRectF{0.0, 0.0, cImgSize.x(), cImgSize.y()}).toRect();
-        if (src.rect().contains(cropRect)) {
-            return src.copy(cropRect);
-        }
+    QRect cropRect = tForm.inverted().mapRect(QRectF{0.0, 0.0, cImgSize.x(), cImgSize.y()}).toRect();
+    bool inscribed = src.rect().contains(cropRect);
+
+    if (inscribed && !rotated) {
+        return src.copy(cropRect);
     }
 
-    // try to keep the pixel format; add alpha channel if fill color is transparent
+    // Add alpha channel only if we must
     QImage::Format outFormat = src.format();
-    if (fillColor.alpha() < 255) {
+    if (!inscribed && fillColor.alpha() < 255) {
         outFormat = alphaFormat(src);
     }
 
