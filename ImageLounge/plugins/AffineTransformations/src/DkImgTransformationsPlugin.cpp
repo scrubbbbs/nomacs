@@ -28,6 +28,7 @@
 #include "DkImgTransformationsPlugin.h"
 
 #include "DkBaseViewPort.h"
+#include "DkImageStorage.h"
 #include "DkMath.h"
 #include "DkSettings.h"
 #include "DkToolbars.h"
@@ -587,9 +588,8 @@ QImage DkImgTransformationsViewPort::getTransformedImage()
             if (mSelectedMode == mode_scale) {
                 affineTransform.scale(mScaleValues.x(), mScaleValues.y());
 
-                QImage paintedImage = QImage(affineTransform.mapRect(inImage.rect()).size(), inImage.format());
-                paintedImage.setColorSpace(inImage.colorSpace());
-                paintedImage.setColorTable(inImage.colorTable());
+                const QRect imgRect = affineTransform.mapRect(inImage.rect());
+                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size());
                 QPainter imagePainter(&paintedImage);
                 imagePainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
                 imagePainter.setTransform(affineTransform);
@@ -607,9 +607,8 @@ QImage DkImgTransformationsViewPort::getTransformedImage()
                 affineTransform.rotate(mRotationValue);
                 affineTransform.translate(-inImage.width() / 2, -inImage.height() / 2);
 
-                QImage paintedImage = QImage(affineTransform.mapRect(inImage.rect()).size(), inImage.format());
-                paintedImage.setColorSpace(inImage.colorSpace());
-                paintedImage.setColorTable(inImage.colorTable());
+                const QRect imgRect = affineTransform.mapRect(inImage.rect());
+                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size());
                 QPainter imagePainter(&paintedImage);
                 imagePainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
                 imagePainter.fillRect(paintedImage.rect(), Qt::white);
@@ -658,9 +657,8 @@ QImage DkImgTransformationsViewPort::getTransformedImage()
                 signY*(inImage.height()/2-transfRect.height()/2));
                 affineTransform.shear(shearValues.x(),shearValues.y());
                 */
-                QImage paintedImage = QImage(affineTransform.mapRect(inImage.rect()).size(), inImage.format());
-                paintedImage.setColorSpace(inImage.colorSpace());
-                paintedImage.setColorTable(inImage.colorTable());
+                const QRect imgRect = affineTransform.mapRect(inImage.rect());
+                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size());
                 QPainter imagePainter(&paintedImage);
                 imagePainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
                 imagePainter.fillRect(paintedImage.rect(), Qt::white);
