@@ -585,11 +585,16 @@ QImage DkImgTransformationsViewPort::getTransformedImage()
             QImage inImage = mViewport->getImage();
             QTransform affineTransform = QTransform();
 
+            QImage::Format imgFormat = inImage.format();
+            if (imgFormat == QImage::Format_Indexed8) { // can't paint into this
+                imgFormat = QImage::Format_RGB32;
+            }
+
             if (mSelectedMode == mode_scale) {
                 affineTransform.scale(mScaleValues.x(), mScaleValues.y());
 
                 const QRect imgRect = affineTransform.mapRect(inImage.rect());
-                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size());
+                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size(), imgFormat);
                 QPainter imagePainter(&paintedImage);
                 imagePainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
                 imagePainter.setTransform(affineTransform);
@@ -608,7 +613,7 @@ QImage DkImgTransformationsViewPort::getTransformedImage()
                 affineTransform.translate(-inImage.width() / 2, -inImage.height() / 2);
 
                 const QRect imgRect = affineTransform.mapRect(inImage.rect());
-                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size());
+                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size(), imgFormat);
                 QPainter imagePainter(&paintedImage);
                 imagePainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
                 imagePainter.fillRect(paintedImage.rect(), Qt::white);
@@ -658,7 +663,7 @@ QImage DkImgTransformationsViewPort::getTransformedImage()
                 affineTransform.shear(shearValues.x(),shearValues.y());
                 */
                 const QRect imgRect = affineTransform.mapRect(inImage.rect());
-                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size());
+                QImage paintedImage = nmc::DkImage::allocateLike(inImage, imgRect.size(), imgFormat);
                 QPainter imagePainter(&paintedImage);
                 imagePainter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
                 imagePainter.fillRect(paintedImage.rect(), Qt::white);
