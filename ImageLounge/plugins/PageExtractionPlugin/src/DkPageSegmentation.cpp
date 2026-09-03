@@ -249,7 +249,11 @@ QImage DkPageSegmentation::cropToRect(const QImage &img, const nmc::DkRotatingRe
     double minD = qMin(abs(angle), abs(angle - CV_PI * 0.5));
 
     const QSize imgSize{qRound(cImgSize.x()), qRound(cImgSize.y())};
-    QImage cImg = nmc::DkImage::allocateLike(img, imgSize);
+    auto imgFormat = img.format();
+    if (imgFormat == QImage::Format_Indexed8) {
+        imgFormat = QImage::Format_RGB32;
+    }
+    QImage cImg = nmc::DkImage::allocateLike(img, imgSize, imgFormat);
     cImg.fill(bgCol);
 
     // render the image into the new coordinate system
