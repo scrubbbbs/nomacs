@@ -311,33 +311,29 @@ bool DkImageContainer::hasImage() const
 
 bool DkImageContainer::hasMovie() const
 {
-    QString suffix;
-    if (!mFileInfo.isSymLink())
-        suffix = mFileInfo.suffix();
-    else {
-        DkFileInfo target = mFileInfo;
-        if (!target.resolveSymLink())
-            return false;
-        suffix = target.suffix();
+    // TODO: these could just be flag on the container established when changing the file path
+    DkFileInfo info = mFileInfo;
+    if (info.isSymLink() && !info.resolveSymLink()) {
+        return false;
     }
-    return suffix.contains(
-               QRegularExpression("(apng|avif|gif|jxl|mng|webp)", QRegularExpression::CaseInsensitiveOption))
-        != 0;
+    const auto suffix = info.suffix();
+
+    static constexpr std::array<QStringView, 7> suffixes = {u"ani", u"apng", u"avif", u"gif", u"jxl", u"mng", u"webp"};
+
+    return std::any_of(suffixes.begin(), suffixes.end(), [&](QStringView s) {
+        return suffix.compare(s, Qt::CaseInsensitive) == 0;
+    });
 }
 
 bool DkImageContainer::hasSvg() const
 {
-    QString suffix = mFileInfo.suffix();
-    if (!mFileInfo.isSymLink())
-        suffix = mFileInfo.suffix();
-    else {
-        DkFileInfo target = mFileInfo;
-        if (!target.resolveSymLink())
-            return false;
-        suffix = target.suffix();
+    DkFileInfo info = mFileInfo;
+    if (info.isSymLink() && !info.resolveSymLink()) {
+        return false;
     }
+    const auto suffix = info.suffix();
 
-    return suffix.contains(QRegularExpression("(svg)", QRegularExpression::CaseInsensitiveOption)) != 0;
+    return suffix.compare(u"svg", Qt::CaseInsensitive) == 0;
 }
 
 int DkImageContainer::getLoadState() const
