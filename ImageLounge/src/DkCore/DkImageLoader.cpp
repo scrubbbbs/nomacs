@@ -729,6 +729,9 @@ void DkImageLoader::load(QSharedPointer<DkImageContainerT> image /* = QSharedPoi
     if (image->getLoadState() == DkImageContainerT::loaded) {
         mCurrentImage = image;
         imageLoaded(true); // pretend we loaded image so all signals are delivered
+        if (!signalsBlocked()) {
+            receiveUpdates(true); // receiving updates from new image, unless we are deactivated
+        }
         return;
     }
 
