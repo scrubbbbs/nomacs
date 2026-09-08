@@ -792,7 +792,7 @@ void DkActionManager::createActions(QWidget *parent)
 
     fileActions.add(file_open_dir,
                     "file_open_dir",
-                    DkImage::loadIcon(":/nomacs/img/open.svg"),
+                    DkImage::loadIcon(":/nomacs/img/dir.svg"),
                     QObject::tr("Open &Directory"),
                     QObject::tr("Open a directory"),
                     shortcut_open_dir);
